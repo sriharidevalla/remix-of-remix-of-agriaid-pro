@@ -25,8 +25,27 @@ serve(async (req) => {
       throw new Error("AI service not configured");
     }
 
-    // Extract base64 data from the image
-    const base64Data = image.split(",")[1] || image;
+    // Extract base64 data from the image - handle both with and without data URL prefix
+    let base64Data = image;
+    let mimeType = "image/jpeg";
+    
+    if (image.includes(",")) {
+      const parts = image.split(",");
+      base64Data = parts[1];
+      // Extract mime type from data URL if present
+      const mimeMatch = parts[0].match(/data:([^;]+);/);
+      if (mimeMatch) {
+        mimeType = mimeMatch[1];
+      }
+    }
+    
+    // Validate base64 data
+    if (!base64Data || base64Data.length < 100) {
+      return new Response(
+        JSON.stringify({ error: "Invalid image data provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const systemPrompt = `You are an expert agricultural plant pathologist specializing in ${cropType} diseases. 
 You analyze plant leaf images to identify diseases with high accuracy.
@@ -75,12 +94,13 @@ Respond ONLY with the JSON object, no additional text.`;
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Data}`,
+                  url: `data:${mimeType};base64,${base64Data}`,
                 },
               },
             ],
           },
         ],
+        max_tokens: 1024,
       }),
     });
 

@@ -67,6 +67,8 @@ const DiagnosisSection = () => {
 
     setIsAnalyzing(true);
     try {
+      console.log("Starting analysis for crop:", selectedCrop);
+      
       const { data, error } = await supabase.functions.invoke("analyze-crop", {
         body: { 
           image: uploadedImage,
@@ -74,7 +76,20 @@ const DiagnosisSection = () => {
         },
       });
 
-      if (error) throw error;
+      console.log("Analysis response:", { data, error });
+
+      if (error) {
+        console.error("Supabase function error:", error);
+        throw new Error(error.message || "Analysis failed");
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (!data?.result) {
+        throw new Error("No analysis result received");
+      }
 
       setResult(data.result);
       toast({
@@ -85,7 +100,7 @@ const DiagnosisSection = () => {
       console.error("Analysis error:", error);
       toast({
         title: "Analysis Failed",
-        description: "Unable to analyze the image. Please try again.",
+        description: error instanceof Error ? error.message : "Unable to analyze the image. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -152,7 +167,8 @@ const DiagnosisSection = () => {
             <div
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
-              className={`upload-zone text-center ${!selectedCrop ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => selectedCrop && fileInputRef.current?.click()}
+              className={`upload-zone text-center ${!selectedCrop ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               {uploadedImage ? (
                 <div className="space-y-4">
