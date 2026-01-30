@@ -3,6 +3,8 @@ import { MessageCircle, X, Send, Loader2, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import LanguageSelector from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -10,6 +12,7 @@ interface Message {
 }
 
 const ChatBot = () => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -84,14 +87,17 @@ const ChatBot = () => {
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] h-[500px] max-h-[calc(100vh-8rem)] bg-card rounded-2xl shadow-elevated border border-border flex flex-col animate-fade-in">
           {/* Header */}
-          <div className="flex items-center gap-3 p-4 border-b border-border">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <Leaf className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold">{t("chatbot.title")}</h3>
+                <p className="text-xs text-muted-foreground">{t("chatbot.subtitle")}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold">Plant Health Assistant</h3>
-              <p className="text-xs text-muted-foreground">Ask me anything about crops</p>
-            </div>
+            <LanguageSelector />
           </div>
 
           {/* Messages */}

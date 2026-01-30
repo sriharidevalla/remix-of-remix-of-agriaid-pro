@@ -84,6 +84,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "footer.rights": "All rights reserved.",
 
     // ChatBot
+    "chatbot.title": "Plant Health Assistant",
+    "chatbot.subtitle": "Ask me anything about crops",
     "chat.title": "Plant Health Assistant",
     "chat.placeholder": "Ask about crop diseases...",
     "chat.welcome": "Hello! I'm your Plant Health Assistant. How can I help you with your crops today?",
@@ -164,6 +166,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "footer.rights": "सर्वाधिकार सुरक्षित।",
 
     // ChatBot
+    "chatbot.title": "पौधा स्वास्थ्य सहायक",
+    "chatbot.subtitle": "फसलों के बारे में कुछ भी पूछें",
     "chat.title": "पौधा स्वास्थ्य सहायक",
     "chat.placeholder": "फसल रोगों के बारे में पूछें...",
     "chat.welcome": "नमस्ते! मैं आपका पौधा स्वास्थ्य सहायक हूं। आज आपकी फसलों में मैं कैसे मदद कर सकता हूं?",
@@ -244,6 +248,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "footer.rights": "అన్ని హక్కులు రిజర్వు చేయబడ్డాయి.",
 
     // ChatBot
+    "chatbot.title": "మొక్కల ఆరోగ్య సహాయకుడు",
+    "chatbot.subtitle": "పంటల గురించి ఏదైనా అడగండి",
     "chat.title": "మొక్క ఆరోగ్య సహాయకుడు",
     "chat.placeholder": "పంట వ్యాధుల గురించి అడగండి...",
     "chat.welcome": "నమస్కారం! నేను మీ మొక్క ఆరోగ్య సహాయకుడిని. ఈ రోజు మీ పంటలతో నేను ఎలా సహాయం చేయగలను?",
@@ -324,6 +330,8 @@ export const translations: Record<Language, Record<string, string>> = {
     "footer.rights": "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
 
     // ChatBot
+    "chatbot.title": "தாவர சுகாதார உதவியாளர்",
+    "chatbot.subtitle": "பயிர்களைப் பற்றி எதையும் கேளுங்கள்",
     "chat.title": "தாவர ஆரோக்கிய உதவியாளர்",
     "chat.placeholder": "பயிர் நோய்களைப் பற்றி கேளுங்கள்...",
     "chat.welcome": "வணக்கம்! நான் உங்கள் தாவர ஆரோக்கிய உதவியாளர். இன்று உங்கள் பயிர்களில் நான் எப்படி உதவ முடியும்?",
