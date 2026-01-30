@@ -23,21 +23,6 @@ const features = [
     title: "AI Chatbot Assistant",
     description: "Get instant answers about diseases, treatments, and farming best practices through our conversational AI.",
   },
-  {
-    icon: FileText,
-    title: "Treatment Plans",
-    description: "Receive detailed treatment recommendations and prevention strategies for each diagnosis.",
-  },
-  {
-    icon: Globe,
-    title: "Multilingual Support",
-    description: "Access the platform in multiple languages to serve diverse farming communities worldwide.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Disease Tracking",
-    description: "Monitor disease progression over time and track the health history of your crops.",
-  },
 ];
 
 const FeaturesSection = () => {
