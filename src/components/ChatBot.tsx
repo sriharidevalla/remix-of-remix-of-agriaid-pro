@@ -12,17 +12,22 @@ interface Message {
 }
 
 const ChatBot = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hello! I'm your Plant Health Assistant. Ask me anything about crop diseases, treatments, or farming best practices. How can I help you today?",
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Reset messages with translated welcome when language changes
+  useEffect(() => {
+    setMessages([
+      {
+        role: "assistant",
+        content: t("chatbot.welcome"),
+      },
+    ]);
+  }, [language, t]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -44,7 +49,8 @@ const ChatBot = () => {
     try {
       const { data, error } = await supabase.functions.invoke("chat", {
         body: { 
-          messages: [...messages, { role: "user", content: userMessage }]
+          messages: [...messages, { role: "user", content: userMessage }],
+          language: language
         },
       });
 
@@ -132,7 +138,7 @@ const ChatBot = () => {
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about crop diseases..."
+                placeholder={t("chatbot.placeholder")}
                 className="flex-1 rounded-full bg-accent/50 border-border"
                 disabled={isLoading}
               />

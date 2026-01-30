@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, language = "en" } = await req.json();
     
     if (!messages || !Array.isArray(messages)) {
       return new Response(
@@ -25,7 +25,18 @@ serve(async (req) => {
       throw new Error("AI service not configured");
     }
 
+    const languageInstructions: Record<string, string> = {
+      en: "Respond in English.",
+      hi: "Respond in Hindi (हिंदी). Use Devanagari script.",
+      te: "Respond in Telugu (తెలుగు). Use Telugu script.",
+      ta: "Respond in Tamil (தமிழ்). Use Tamil script.",
+    };
+
+    const languageInstruction = languageInstructions[language] || languageInstructions.en;
+
     const systemPrompt = `You are a friendly and knowledgeable Plant Health Assistant, an expert in agricultural science specializing in crop diseases and farming practices.
+
+CRITICAL LANGUAGE INSTRUCTION: ${languageInstruction}
 
 IMPORTANT RULES:
 - Never mention that you are an AI, API, chatbot, or language model
