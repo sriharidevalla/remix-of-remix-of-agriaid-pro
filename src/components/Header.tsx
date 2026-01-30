@@ -1,11 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Leaf, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import LanguageSelector from "@/components/LanguageSelector";
 
 const Header = () => {
-  const { t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -26,7 +23,7 @@ const Header = () => {
               <Leaf className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-semibold text-lg">
-              {t("header.title")} <span className="text-primary">{t("header.titleHighlight")}</span>
+              Plant Health <span className="text-primary">Advisory</span>
             </span>
           </div>
 
@@ -36,27 +33,26 @@ const Header = () => {
               onClick={() => scrollToSection("diagnosis")}
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
-              {t("nav.diagnosis")}
+              Diagnosis
             </button>
             <button
               onClick={() => scrollToSection("features")}
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
-              {t("nav.features")}
+              Features
             </button>
             <button
               onClick={() => scrollToSection("how-it-works")}
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
-              {t("nav.howItWorks")}
+              How It Works
             </button>
             <button
               onClick={() => scrollToSection("about")}
               className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
             >
-              {t("nav.about")}
+              About
             </button>
-            <LanguageSelector />
           </nav>
 
           {/* CTA Button */}
@@ -65,7 +61,7 @@ const Header = () => {
               onClick={() => scrollToSection("diagnosis")}
               className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
             >
-              {t("nav.getStarted")}
+              Get Started
             </Button>
           </div>
 
@@ -90,34 +86,31 @@ const Header = () => {
                 onClick={() => scrollToSection("diagnosis")}
                 className="text-left text-muted-foreground hover:text-foreground transition-colors py-2"
               >
-                {t("nav.diagnosis")}
+                Diagnosis
               </button>
               <button
                 onClick={() => scrollToSection("features")}
                 className="text-left text-muted-foreground hover:text-foreground transition-colors py-2"
               >
-                {t("nav.features")}
+                Features
               </button>
               <button
                 onClick={() => scrollToSection("how-it-works")}
                 className="text-left text-muted-foreground hover:text-foreground transition-colors py-2"
               >
-                {t("nav.howItWorks")}
+                How It Works
               </button>
               <button
                 onClick={() => scrollToSection("about")}
                 className="text-left text-muted-foreground hover:text-foreground transition-colors py-2"
               >
-                {t("nav.about")}
+                About
               </button>
-              <div className="py-2">
-                <LanguageSelector />
-              </div>
               <Button
                 onClick={() => scrollToSection("diagnosis")}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-full mt-2"
               >
-                {t("nav.getStarted")}
+                Get Started
               </Button>
             </nav>
           </div>

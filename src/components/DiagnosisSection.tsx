@@ -4,15 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 const crops = [
-  { id: "tomato", nameKey: "crop.tomato", emoji: "🍅" },
-  { id: "grape", nameKey: "crop.grape", emoji: "🍇" },
-  { id: "sugarcane", nameKey: "crop.sugarcane", emoji: "🎋" },
-  { id: "maize", nameKey: "crop.maize", emoji: "🌽" },
-  { id: "potato", nameKey: "crop.potato", emoji: "🥔" },
-  { id: "apple", nameKey: "crop.apple", emoji: "🍎" },
+  { id: "tomato", name: "Tomato", emoji: "🍅" },
+  { id: "grape", name: "Grape", emoji: "🍇" },
+  { id: "sugarcane", name: "Sugarcane", emoji: "🎋" },
+  { id: "maize", name: "Maize", emoji: "🌽" },
+  { id: "potato", name: "Potato", emoji: "🥔" },
+  { id: "apple", name: "Apple", emoji: "🍎" },
 ];
 
 interface DiagnosisResult {
@@ -25,7 +24,6 @@ interface DiagnosisResult {
 }
 
 const DiagnosisSection = () => {
-  const { t } = useLanguage();
   const [selectedCrop, setSelectedCrop] = useState<string>("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -37,8 +35,8 @@ const DiagnosisSection = () => {
   const handleImageUpload = useCallback((file: File) => {
     if (!selectedCrop) {
       toast({
-        title: t("diagnosis.selectCropFirst"),
-        description: t("diagnosis.selectCropDescription"),
+        title: "Select a crop first",
+        description: "Please select the crop type before uploading an image.",
         variant: "destructive",
       });
       return;
@@ -50,7 +48,7 @@ const DiagnosisSection = () => {
       setResult(null);
     };
     reader.readAsDataURL(file);
-  }, [selectedCrop, toast, t]);
+  }, [selectedCrop, toast]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -70,8 +68,8 @@ const DiagnosisSection = () => {
   const handleCameraClick = () => {
     if (!selectedCrop) {
       toast({
-        title: t("diagnosis.selectCropFirst"),
-        description: t("diagnosis.selectCropDescription"),
+        title: "Select a crop first",
+        description: "Please select the crop type before uploading an image.",
         variant: "destructive",
       });
       return;
@@ -97,7 +95,7 @@ const DiagnosisSection = () => {
 
       if (error) {
         console.error("Supabase function error:", error);
-        throw new Error(error.message || t("diagnosis.analysisFailed"));
+        throw new Error(error.message || "Analysis Failed");
       }
 
       if (data?.error) {
@@ -110,13 +108,13 @@ const DiagnosisSection = () => {
 
       setResult(data.result);
       toast({
-        title: t("diagnosis.analysisComplete"),
-        description: t("diagnosis.analysisSuccessDescription"),
+        title: "Analysis Complete",
+        description: "Your crop has been analyzed successfully.",
       });
     } catch (error) {
       console.error("Analysis error:", error);
       toast({
-        title: t("diagnosis.analysisFailed"),
+        title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Unable to analyze the image. Please try again.",
         variant: "destructive",
       });
@@ -141,20 +139,20 @@ const DiagnosisSection = () => {
         <div className="text-center mb-12">
           <div className="section-badge mx-auto mb-6">
             <Leaf className="w-4 h-4" />
-            <span>{t("diagnosis.badge")}</span>
+            <span>AI Diagnosis</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {t("diagnosis.title")}{" "}
-            <span className="text-gradient">{t("diagnosis.titleHighlight")}</span>
+            Diagnose Your{" "}
+            <span className="text-gradient">Crop Health</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            {t("diagnosis.description")}
+            Upload a photo of your crop leaf and get instant AI-powered disease detection with treatment recommendations.
           </p>
         </div>
 
         {/* Crop Selection */}
         <div className="max-w-4xl mx-auto mb-8">
-          <p className="text-sm font-medium mb-3 text-center">{t("diagnosis.selectCrop")}</p>
+          <p className="text-sm font-medium mb-3 text-center">Select your crop type:</p>
           <div className="flex flex-wrap justify-center gap-3">
             {crops.map((crop) => (
               <button
@@ -167,7 +165,7 @@ const DiagnosisSection = () => {
                 }`}
               >
                 <span className="text-xl">{crop.emoji}</span>
-                <span className="font-medium">{t(crop.nameKey)}</span>
+                <span className="font-medium">{crop.name}</span>
               </button>
             ))}
           </div>
@@ -178,7 +176,7 @@ const DiagnosisSection = () => {
           <Card className="p-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <Upload className="w-5 h-5 text-primary" />
-              {t("diagnosis.uploadTitle")}
+              Upload Crop Image
             </h3>
             
             <div
@@ -195,7 +193,7 @@ const DiagnosisSection = () => {
                     className="max-h-48 mx-auto rounded-lg object-cover"
                   />
                   <p className="text-sm text-muted-foreground">
-                    {t("diagnosis.imageUploaded")}
+                    Image uploaded successfully
                   </p>
                 </div>
               ) : (
@@ -204,8 +202,8 @@ const DiagnosisSection = () => {
                     <Image className="w-8 h-8 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">{t("diagnosis.dragDrop")}</p>
-                    <p className="text-sm text-muted-foreground">{t("diagnosis.orClick")}</p>
+                    <p className="font-medium">Drag and drop your crop leaf image here</p>
+                    <p className="text-sm text-muted-foreground">or click to browse</p>
                   </div>
                 </div>
               )}
@@ -239,7 +237,7 @@ const DiagnosisSection = () => {
                 disabled={!selectedCrop}
               >
                 <Camera className="w-4 h-4" />
-                {t("diagnosis.takePhoto")}
+                Take Photo
               </Button>
               <Button
                 className="flex-1 gap-2 bg-primary hover:bg-primary/90"
@@ -247,7 +245,7 @@ const DiagnosisSection = () => {
                 disabled={!selectedCrop}
               >
                 <Upload className="w-4 h-4" />
-                {t("diagnosis.browseFiles")}
+                Browse Files
               </Button>
             </div>
             
@@ -260,16 +258,16 @@ const DiagnosisSection = () => {
                 {isAnalyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t("diagnosis.analyzing")}
+                    Analyzing...
                   </>
                 ) : (
-                  t("diagnosis.analyzeImage")
+                  "Analyze Image"
                 )}
               </Button>
             )}
             
             <p className="text-xs text-muted-foreground mt-4 text-center">
-              {t("diagnosis.uploadPrompt")}
+              → Upload an image to start diagnosis
             </p>
           </Card>
 
@@ -277,7 +275,7 @@ const DiagnosisSection = () => {
           <Card className="p-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-primary" />
-              {result ? t("diagnosis.resultsTitle") : t("diagnosis.awaitingTitle")}
+              {result ? "Diagnosis Results" : "Awaiting Your Image"}
             </h3>
             
             {result ? (
@@ -286,7 +284,7 @@ const DiagnosisSection = () => {
                 <div className="bg-accent/50 rounded-xl p-4">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <p className="text-sm text-muted-foreground">{t("diagnosis.detectedDisease")}</p>
+                      <p className="text-sm text-muted-foreground">Detected Disease</p>
                       <h4 className="text-xl font-bold text-foreground">{result.disease}</h4>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(result.severity)}`}>
@@ -295,7 +293,7 @@ const DiagnosisSection = () => {
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between text-sm mb-1">
-                      <span>{t("diagnosis.confidence")}</span>
+                      <span>Confidence</span>
                       <span className="font-medium">{result.confidence}%</span>
                     </div>
                     <div className="h-2 bg-border rounded-full overflow-hidden">
@@ -311,7 +309,7 @@ const DiagnosisSection = () => {
                 <div>
                   <h5 className="font-medium mb-2 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-warning" />
-                    {t("diagnosis.symptomsDetected")}
+                    Symptoms Detected
                   </h5>
                   <ul className="space-y-1">
                     {result.symptoms.map((symptom, i) => (
@@ -325,7 +323,7 @@ const DiagnosisSection = () => {
 
                 {/* Treatment */}
                 <div>
-                  <h5 className="font-medium mb-2 text-primary">{t("diagnosis.treatmentRecommendations")}</h5>
+                  <h5 className="font-medium mb-2 text-primary">Treatment Recommendations</h5>
                   <ul className="space-y-2">
                     {result.treatment.map((item, i) => (
                       <li key={i} className="text-sm bg-card border border-border rounded-lg p-3">
@@ -337,7 +335,7 @@ const DiagnosisSection = () => {
 
                 {/* Prevention */}
                 <div>
-                  <h5 className="font-medium mb-2 text-muted-foreground">{t("diagnosis.preventionTips")}</h5>
+                  <h5 className="font-medium mb-2 text-muted-foreground">Prevention Tips</h5>
                   <ul className="space-y-1">
                     {result.prevention.map((tip, i) => (
                       <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
@@ -353,9 +351,9 @@ const DiagnosisSection = () => {
                 <div className="w-20 h-20 rounded-full bg-accent mx-auto flex items-center justify-center mb-4">
                   <Leaf className="w-10 h-10 text-primary animate-pulse-gentle" />
                 </div>
-                <p className="font-medium mb-2">{t("diagnosis.awaitingTitle")}</p>
+                <p className="font-medium mb-2">Awaiting Your Image</p>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  {t("diagnosis.awaitingDescription")}
+                  Upload a clear photo of your crop's leaf to receive an instant AI-powered health assessment and treatment recommendations.
                 </p>
               </div>
             )}
