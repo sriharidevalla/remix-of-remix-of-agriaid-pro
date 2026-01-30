@@ -1,73 +1,135 @@
-# Welcome to your Lovable project
+# AgriAid Pro 🌱
 
-## Project info
+An AI-powered plant health advisory system for crop disease diagnosis and agricultural guidance.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![Plant Health Advisory](public/favicon.png)
 
-## How can I edit this code?
+## Overview
 
-There are several ways of editing your application.
+AgriAid Pro helps farmers and agricultural professionals diagnose crop diseases using advanced image analysis. Simply upload a photo of your affected crop, and the system provides detailed diagnosis along with treatment recommendations.
 
-**Use Lovable**
+### Key Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **🔬 AI-Powered Diagnosis** - Upload crop images for instant disease detection
+- **🌾 Multi-Crop Support** - Supports 12+ crops including Tomato, Rice, Wheat, Cotton, and more
+- **💬 Expert Chatbot** - Get personalized agricultural advice from our plant pathology assistant
+- **🌍 Multi-Language** - Available in English, Hindi, and Telugu
+- **📱 Responsive Design** - Works seamlessly on desktop and mobile devices
 
-Changes made via Lovable will be committed automatically to this repo.
+## Supported Crops
 
-**Use your preferred IDE**
+| Crop | Common Diseases Detected |
+|------|-------------------------|
+| Tomato | Early Blight, Late Blight, Septoria, Mosaic Virus |
+| Rice | Rice Blast, Brown Spot, Bacterial Leaf Blight |
+| Wheat | Powdery Mildew, Rust, Septoria, Fusarium |
+| Cotton | Bacterial Blight, Verticillium Wilt, Leaf Curl Virus |
+| Potato | Early Blight, Late Blight, Black Scurf |
+| Grape | Powdery Mildew, Downy Mildew, Black Rot |
+| Maize | Northern Leaf Blight, Gray Leaf Spot, Rust |
+| Orange | Citrus Canker, Greening (HLB), Black Spot |
+| Chilli | Bacterial Spot, Anthracnose, Leaf Curl |
+| And more... | |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Backend**: Supabase Edge Functions
+- **AI**: Google Gemini Vision API
+- **State Management**: TanStack Query
 
-Follow these steps:
+## Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Node.js 18+ 
+- npm or bun
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+# Clone the repository
+git clone https://github.com/sriharidevalla/agriaid-pro.git
+
+# Navigate to project directory
+cd agriaid-pro
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Environment Variables
 
-**Use GitHub Codespaces**
+Create a `.env` file in the root directory:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+```
 
-## What technologies are used for this project?
+## Project Structure
 
-This project is built with:
+```
+agriaid-pro/
+├── public/              # Static assets
+├── src/
+│   ├── components/      # React components
+│   │   ├── ui/          # shadcn/ui components
+│   │   ├── Header.tsx
+│   │   ├── HeroSection.tsx
+│   │   ├── DiagnosisSection.tsx
+│   │   ├── ChatBot.tsx
+│   │   └── ...
+│   ├── contexts/        # React contexts
+│   ├── hooks/           # Custom hooks
+│   ├── lib/             # Utility functions
+│   └── pages/           # Page components
+├── supabase/
+│   └── functions/       # Edge functions
+│       ├── analyze-crop/
+│       └── chat/
+└── ...
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Deployment
 
-## How can I deploy this project?
+### Production Build
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```bash
+npm run build
+```
 
-## Can I connect a custom domain to my Lovable project?
+The build output will be in the `dist/` directory, ready for deployment to any static hosting service.
 
-Yes, you can!
+### Recommended Hosting
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Vercel
+- Netlify
+- Cloudflare Pages
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Plant disease datasets and agricultural research references
+- Open-source community for the amazing tools and libraries
+
+---
+
+**Made with ❤️ for farmers and agricultural communities**
