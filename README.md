@@ -1,49 +1,118 @@
-# AgriAid Pro 🌱
+# Context-Aware Plant Health Advisory Using EfficientNet and ViT 🌱
 
-An AI-powered plant health advisory system for crop disease diagnosis and agricultural guidance.
+An AI-driven agricultural system for intelligent crop disease detection, yield optimization, and farmer assistance using advanced deep learning models.
 
 ![Plant Health Advisory](public/favicon.png)
 
-## Overview
+## Abstract
 
-AgriAid Pro helps farmers and agricultural professionals diagnose crop diseases using advanced image analysis. Simply upload a photo of your affected crop, and the system provides detailed diagnosis along with treatment recommendations.
+Agriculture is central to global food security but is hindered by crop diseases, inefficient management, and resource constraints. Traditional disease detection methods based on manual inspection are slow and unreliable, while early machine learning approaches using SVM, KNN, and CNN achieved high accuracy yet suffered from overfitting, limited datasets, and poor generalization to real-world conditions.
 
-### Key Features
+This project overcomes these limitations by integrating advanced AI-driven methodologies into a unified framework. Disease detection is improved through lightweight yet powerful architectures such as **EfficientNet** and **Vision Transformers (ViT)**, coupled with expanded datasets (PlantVillage, PlantDoc) to reduce domain shift.
 
-- **🔬 AI-Powered Diagnosis** - Upload crop images for instant disease detection
-- **🌾 Multi-Crop Support** - Supports 12+ crops including Tomato, Rice, Wheat, Cotton, and more
-- **💬 Expert Chatbot** - Get personalized agricultural advice from our plant pathology assistant
-- **🌍 Multi-Language** - Available in English, Hindi, and Telugu
-- **📱 Responsive Design** - Works seamlessly on desktop and mobile devices
+The system provides:
+- Multi-factor predictive models for crop optimization
+- Temporal disease progression modeling
+- Explainable AI (LIME, SHAP) for trustworthy insights
+- Multilingual conversational AI for diverse farming communities
 
-## Supported Crops
+## Key Features
 
-| Crop | Common Diseases Detected |
-|------|-------------------------|
-| Tomato | Early Blight, Late Blight, Septoria, Mosaic Virus |
-| Rice | Rice Blast, Brown Spot, Bacterial Leaf Blight |
-| Wheat | Powdery Mildew, Rust, Septoria, Fusarium |
-| Cotton | Bacterial Blight, Verticillium Wilt, Leaf Curl Virus |
-| Potato | Early Blight, Late Blight, Black Scurf |
-| Grape | Powdery Mildew, Downy Mildew, Black Rot |
-| Maize | Northern Leaf Blight, Gray Leaf Spot, Rust |
-| Orange | Citrus Canker, Greening (HLB), Black Spot |
-| Chilli | Bacterial Spot, Anthracnose, Leaf Curl |
-| And more... | |
+| Feature | Description |
+|---------|-------------|
+| 🔬 **AI-Powered Disease Detection** | Advanced deep learning models (EfficientNet, ViT) for high-accuracy disease identification |
+| 🌾 **Multi-Crop Support** | Trained on diverse datasets covering 12+ major crops |
+| 📊 **Early Detection** | Identifies diseases at early stages to prevent spread and minimize losses |
+| 💬 **Multilingual Chatbot** | Conversational AI assistant available in English, Hindi, and Telugu |
+| 📱 **Low-Cost & Scalable** | Lightweight models optimized for deployment without expensive IoT hardware |
+| 🔍 **Explainable AI** | LIME and SHAP integration for transparent and trustworthy predictions |
 
-## Tech Stack
+## System Architecture
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui
-- **Backend**: Supabase Edge Functions
-- **AI**: Google Gemini Vision API
-- **State Management**: TanStack Query
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         FARMER                                  │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────┐            │
+│  │ Register │  │ Upload Image │  │ View Results   │            │
+│  └────┬─────┘  └──────┬───────┘  └───────▲────────┘            │
+└───────┼───────────────┼──────────────────┼──────────────────────┘
+        │               │                  │
+        ▼               ▼                  │
+┌───────────────────────────────────────────────────────────────┐
+│                    AI ANALYSIS ENGINE                          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌────────────────┐ │
+│  │  EfficientNet   │  │ Vision Trans-   │  │  Conversational│ │
+│  │  Disease Model  │  │ former (ViT)    │  │  AI Chatbot    │ │
+│  └─────────────────┘  └─────────────────┘  └────────────────┘ │
+└───────────────────────────────────────────────────────────────┘
+        │               │                  │
+        ▼               ▼                  ▼
+┌───────────────────────────────────────────────────────────────┐
+│                       DATABASE                                 │
+│     Crop Data │ Disease Records │ Treatment History            │
+└───────────────────────────────────────────────────────────────┘
+```
+
+## Supported Crops & Diseases
+
+| Crop | Detectable Diseases |
+|------|---------------------|
+| **Tomato** | Early Blight, Late Blight, Septoria Leaf Spot, Mosaic Virus, Bacterial Spot |
+| **Rice** | Rice Blast, Brown Spot, Bacterial Leaf Blight, Sheath Blight, Tungro Virus |
+| **Wheat** | Powdery Mildew, Rust (Leaf/Stem/Stripe), Septoria, Fusarium Head Blight |
+| **Cotton** | Bacterial Blight, Verticillium Wilt, Fusarium Wilt, Cotton Leaf Curl Virus |
+| **Potato** | Early Blight, Late Blight, Black Scurf, Blackleg, Mosaic Virus |
+| **Grape** | Powdery Mildew, Downy Mildew, Black Rot, Anthracnose, Leaf Blight |
+| **Maize/Corn** | Northern Leaf Blight, Gray Leaf Spot, Common Rust, Southern Rust |
+| **Orange** | Citrus Canker, Greening (HLB), Melanose, Anthracnose, Black Spot |
+| **Chilli** | Bacterial Spot, Anthracnose, Powdery Mildew, Mosaic Virus, Leaf Curl |
+| **Apple** | Apple Scab, Black Rot, Cedar Apple Rust, Fire Blight |
+| **Cucumber** | Downy Mildew, Powdery Mildew, Angular Leaf Spot, Mosaic Virus |
+| **Strawberry** | Gray Mold (Botrytis), Powdery Mildew, Leaf Spot, Verticillium Wilt |
+
+## Technology Stack
+
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development builds
+- **Tailwind CSS** for styling
+- **shadcn/ui** component library
+
+### Backend
+- **Supabase Edge Functions** for serverless API
+- **Google Gemini Vision API** for image analysis
+- **PostgreSQL** database via Supabase
+
+### AI/ML Components
+- **EfficientNet-B0** - Lightweight disease classification
+- **Vision Transformers (ViT)** - Advanced pattern recognition
+- **Explainable AI** - LIME & SHAP for model interpretability
+- **PlantVillage & PlantDoc** - Training datasets
+
+## Proposed Methodology
+
+1. **Image Upload** - Farmer uploads crop leaf image
+2. **Preprocessing** - Image normalization and augmentation
+3. **AI Analysis** - EfficientNet/ViT models analyze the image
+4. **Symptom Detection** - System identifies visible disease symptoms
+5. **Disease Prediction** - Classification with confidence scores
+6. **Treatment Recommendation** - Actionable treatment suggestions
+7. **Chatbot Assistance** - Multilingual support for follow-up queries
+
+## Advantages Over Existing Systems
+
+| Challenge | Our Solution |
+|-----------|--------------|
+| Dataset Limitations | Expanded training with PlantVillage, PlantDoc, and field images |
+| Overfitting Issues | Domain adaptation techniques and diverse augmentation |
+| Limited Adaptability | Multi-crop support with transfer learning |
+| Expert Dependence | AI-powered instant diagnosis with explainable results |
+| High Computational Cost | Lightweight EfficientNet optimized for edge deployment |
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js 18+ 
+- Node.js 18+
 - npm or bun
 
 ### Installation
@@ -62,12 +131,9 @@ npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+### Environment Configuration
 
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
+Create a `.env` file:
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
@@ -77,59 +143,44 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 
 ```
 agriaid-pro/
-├── public/              # Static assets
+├── public/                 # Static assets
 ├── src/
-│   ├── components/      # React components
-│   │   ├── ui/          # shadcn/ui components
-│   │   ├── Header.tsx
-│   │   ├── HeroSection.tsx
-│   │   ├── DiagnosisSection.tsx
-│   │   ├── ChatBot.tsx
+│   ├── components/         # React components
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── Header.tsx      # Navigation header
+│   │   ├── HeroSection.tsx # Landing hero
+│   │   ├── DiagnosisSection.tsx  # Image upload & analysis
+│   │   ├── ChatBot.tsx     # AI chatbot interface
 │   │   └── ...
-│   ├── contexts/        # React contexts
-│   ├── hooks/           # Custom hooks
-│   ├── lib/             # Utility functions
-│   └── pages/           # Page components
+│   ├── contexts/           # React contexts (Language)
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utility functions
+│   └── pages/              # Page components
 ├── supabase/
-│   └── functions/       # Edge functions
-│       ├── analyze-crop/
-│       └── chat/
+│   └── functions/          # Edge functions
+│       ├── analyze-crop/   # Disease detection API
+│       └── chat/           # Chatbot API
 └── ...
 ```
 
-## Deployment
+## References
 
-### Production Build
+1. M. Gayathri, A. Lalitha Sagar, V. Murali Krishna, "AI Bot for Helping Farmers in Detecting Coconut Tree Diseases", *2024 International Conference on Emerging Research in Computational Science (ICERCS)*
 
-```bash
-npm run build
-```
+2. Rikendra, Monika Sharma, Sansar Singh Chauhan, "AI-Enhanced Disease Identification and Yield Optimization in Seasonal Agriculture", *2025 3rd International Conference on Disruptive Technologies (ICDT)*
 
-The build output will be in the `dist/` directory, ready for deployment to any static hosting service.
+3. N. Santha Raju et al., "AI-Powered Crop Suggestion, Yield Prediction, Disease Detection, and Soil Monitoring", *2024 3rd International Conference on Automation, Computing and Renewable Systems (ICACRS)*
 
-### Recommended Hosting
+4. C. Bhuvaneswari et al., "Implementing AI-Powered Chatbots in Agriculture for Optimization and Efficiency", *2024 2nd International Conference on Intelligent Data Communication Technologies and Internet of Things (IDCIoT)*
 
-- Vercel
-- Netlify
-- Cloudflare Pages
+## Team
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+**Department of Computer Science & Engineering**
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Plant disease datasets and agricultural research references
-- Open-source community for the amazing tools and libraries
+This project is developed for academic purposes.
 
 ---
 
-**Made with ❤️ for farmers and agricultural communities**
+**Empowering farmers with AI-driven agricultural insights** 🌾
