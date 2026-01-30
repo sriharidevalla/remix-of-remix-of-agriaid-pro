@@ -6,12 +6,18 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const crops = [
-  { id: "tomato", name: "Tomato", emoji: "🍅" },
-  { id: "grape", name: "Grape", emoji: "🍇" },
-  { id: "sugarcane", name: "Sugarcane", emoji: "🎋" },
-  { id: "maize", name: "Maize", emoji: "🌽" },
-  { id: "potato", name: "Potato", emoji: "🥔" },
-  { id: "apple", name: "Apple", emoji: "🍎" },
+  { id: "tomato", name: "Tomato" },
+  { id: "potato", name: "Potato" },
+  { id: "grape", name: "Grape" },
+  { id: "apple", name: "Apple" },
+  { id: "maize", name: "Maize/Corn" },
+  { id: "rice", name: "Rice" },
+  { id: "wheat", name: "Wheat" },
+  { id: "cotton", name: "Cotton" },
+  { id: "citrus", name: "Citrus" },
+  { id: "pepper", name: "Pepper/Chili" },
+  { id: "cucumber", name: "Cucumber" },
+  { id: "strawberry", name: "Strawberry" },
 ];
 
 interface DiagnosisResult {
@@ -153,19 +159,18 @@ const DiagnosisSection = () => {
         {/* Crop Selection */}
         <div className="max-w-4xl mx-auto mb-8">
           <p className="text-sm font-medium mb-3 text-center">Select your crop type:</p>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-2">
             {crops.map((crop) => (
               <button
                 key={crop.id}
                 onClick={() => setSelectedCrop(crop.id)}
-                className={`px-6 py-3 rounded-full border-2 transition-all duration-200 flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-full border-2 transition-all duration-200 text-sm font-medium ${
                   selectedCrop === crop.id
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border hover:border-primary/50 bg-card"
                 }`}
               >
-                <span className="text-xl">{crop.emoji}</span>
-                <span className="font-medium">{crop.name}</span>
+                {crop.name}
               </button>
             ))}
           </div>
