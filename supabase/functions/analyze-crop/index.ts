@@ -71,6 +71,8 @@ Be specific to ${cropType} crop diseases. Common ${cropType} diseases include:
 - Grape: Powdery Mildew, Downy Mildew, Black Rot, Anthracnose, Leaf Blight
 - Sugarcane: Red Rot, Smut, Leaf Scald, Mosaic Disease, Rust
 - Maize: Northern Corn Leaf Blight, Common Rust, Gray Leaf Spot, Maize Dwarf Mosaic
+- Potato: Early Blight, Late Blight, Blackleg, Potato Virus Y, Brown Rot, Scab
+- Apple: Apple Scab, Fire Blight, Powdery Mildew, Cedar Apple Rust, Black Rot, Bitter Pit
 
 Respond ONLY with the JSON object, no additional text.`;
 
