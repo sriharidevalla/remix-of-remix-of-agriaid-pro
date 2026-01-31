@@ -26,21 +26,18 @@ const InstallBanner = () => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(isIOSDevice);
 
-    // Show banner for iOS after a delay
-    if (isIOSDevice) {
-      const timer = setTimeout(() => setShowBanner(true), 3000);
-      return () => clearTimeout(timer);
-    }
+    // Show banner after delay for all users
+    const timer = setTimeout(() => setShowBanner(true), 3000);
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setTimeout(() => setShowBanner(true), 3000);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
     };
   }, []);
