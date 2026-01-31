@@ -6,6 +6,7 @@ import DiagnosisSection from "@/components/DiagnosisSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import Footer from "@/components/Footer";
 import ChatBot from "@/components/ChatBot";
+import InstallBanner from "@/components/InstallBanner";
 
 const Index = () => {
   const scrollToDiagnosis = useCallback(() => {
@@ -24,6 +25,7 @@ const Index = () => {
       <HowItWorksSection />
       <Footer />
       <ChatBot />
+      <InstallBanner />
     </div>
   );
 };
