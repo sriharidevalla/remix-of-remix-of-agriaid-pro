@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Leaf, Menu, X } from "lucide-react";
+import { Leaf, Menu, X, Download } from "lucide-react";
 import { useState } from "react";
 
 const Header = () => {
@@ -53,6 +53,13 @@ const Header = () => {
             >
               About
             </button>
+            <a
+              href="/install"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium flex items-center gap-1"
+            >
+              <Download className="w-4 h-4" />
+              Install App
+            </a>
           </nav>
 
           {/* CTA Button */}
@@ -106,6 +113,14 @@ const Header = () => {
               >
                 About
               </button>
+              <a
+                href="/install"
+                className="text-left text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </a>
               <Button
                 onClick={() => scrollToSection("diagnosis")}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full w-full mt-2"
