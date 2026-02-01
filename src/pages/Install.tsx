@@ -137,15 +137,15 @@ const Install = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                Quick access from home screen
+                Diagnose crops in seconds
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                Available on your device
+                No login required each time
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                Full screen experience
+                Lightweight & fast
               </li>
             </ul>
           </div>
