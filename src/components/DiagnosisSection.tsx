@@ -302,18 +302,6 @@ const DiagnosisSection = () => {
             {result?.severity}
           </span>
         </div>
-        <div className="mt-3">
-          <div className="flex justify-between text-sm mb-1">
-            <span>Confidence</span>
-            <span className="font-medium">{result?.confidence}%</span>
-          </div>
-          <div className="h-2 bg-border rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${result?.disease === "Healthy" ? "bg-success" : "bg-primary"}`}
-              style={{ width: `${result?.confidence}%` }}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Symptoms */}
