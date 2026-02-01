@@ -11,6 +11,16 @@ interface Message {
   content: string;
 }
 
+// Generate a session ID for conversation memory
+const getSessionId = () => {
+  let sessionId = sessionStorage.getItem("chat_session_id");
+  if (!sessionId) {
+    sessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem("chat_session_id", sessionId);
+  }
+  return sessionId;
+};
+
 const ChatBot = () => {
   const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +28,7 @@ const ChatBot = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sessionId = useRef(getSessionId());
 
   // Reset messages with translated welcome when language changes
   useEffect(() => {
@@ -50,7 +61,8 @@ const ChatBot = () => {
       const { data, error } = await supabase.functions.invoke("chat", {
         body: { 
           messages: [...messages, { role: "user", content: userMessage }],
-          language: language
+          language: language,
+          sessionId: sessionId.current
         },
       });
 
@@ -66,7 +78,7 @@ const ChatBot = () => {
         ...prev,
         {
           role: "assistant",
-          content: "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
+          content: t("chatbot.error") || "I apologize, but I'm having trouble responding right now. Please try again in a moment.",
         },
       ]);
     } finally {

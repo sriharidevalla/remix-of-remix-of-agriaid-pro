@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from "react";
-import { Upload, Camera, Leaf, Loader2, CheckCircle, AlertTriangle, Image } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Upload, Camera, Leaf, Loader2, CheckCircle, AlertTriangle, Image, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,9 @@ const crops = [
   { id: "chilli", name: "Chilli" },
   { id: "cucumber", name: "Cucumber" },
   { id: "strawberry", name: "Strawberry" },
+  { id: "sugarcane", name: "Sugarcane" },
+  { id: "soybean", name: "Soybean" },
+  { id: "pepper", name: "Bell Pepper" },
 ];
 
 interface DiagnosisResult {
@@ -27,7 +30,19 @@ interface DiagnosisResult {
   symptoms: string[];
   treatment: string[];
   prevention: string[];
+  isIrrelevant?: boolean;
+  irrelevantReason?: string;
 }
+
+// Generate a session ID for this browser session
+const getSessionId = () => {
+  let sessionId = sessionStorage.getItem("diagnosis_session_id");
+  if (!sessionId) {
+    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem("diagnosis_session_id", sessionId);
+  }
+  return sessionId;
+};
 
 const DiagnosisSection = () => {
   const [selectedCrop, setSelectedCrop] = useState<string>("");
@@ -37,6 +52,30 @@ const DiagnosisSection = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const sessionId = useRef(getSessionId());
+
+  // Load previous diagnosis if available
+  useEffect(() => {
+    const loadPreviousDiagnosis = async () => {
+      try {
+        const { data } = await supabase
+          .from("diagnosis_history")
+          .select("*")
+          .eq("session_id", sessionId.current)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (data && !data.is_irrelevant) {
+          // Optionally restore previous diagnosis
+          console.log("Previous diagnosis available:", data.disease_name);
+        }
+      } catch {
+        // No previous diagnosis, that's fine
+      }
+    };
+    loadPreviousDiagnosis();
+  }, []);
 
   const handleImageUpload = useCallback((file: File) => {
     if (!selectedCrop) {
@@ -83,6 +122,24 @@ const DiagnosisSection = () => {
     cameraInputRef.current?.click();
   };
 
+  const saveDiagnosis = async (diagnosisResult: DiagnosisResult) => {
+    try {
+      await supabase.from("diagnosis_history").insert({
+        session_id: sessionId.current,
+        crop_type: selectedCrop,
+        disease_name: diagnosisResult.disease,
+        confidence: diagnosisResult.confidence,
+        severity: diagnosisResult.severity,
+        symptoms: diagnosisResult.symptoms,
+        treatment: diagnosisResult.treatment,
+        prevention: diagnosisResult.prevention,
+        is_irrelevant: diagnosisResult.isIrrelevant || false,
+      });
+    } catch (error) {
+      console.log("Could not save diagnosis:", error);
+    }
+  };
+
   const analyzeCrop = async () => {
     if (!uploadedImage || !selectedCrop) return;
 
@@ -112,11 +169,27 @@ const DiagnosisSection = () => {
         throw new Error("No analysis result received");
       }
 
-      setResult(data.result);
-      toast({
-        title: "Analysis Complete",
-        description: "Your crop has been analyzed successfully.",
-      });
+      const analysisResult = data.result as DiagnosisResult;
+      setResult(analysisResult);
+
+      // Save to history
+      await saveDiagnosis(analysisResult);
+
+      // Show appropriate toast
+      if (analysisResult.isIrrelevant) {
+        toast({
+          title: "Image Not Recognized",
+          description: analysisResult.irrelevantReason || "Please upload a clear image of a plant leaf.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Analysis Complete",
+          description: analysisResult.disease === "Healthy" 
+            ? "Your crop appears to be healthy!" 
+            : `Detected: ${analysisResult.disease}`,
+        });
+      }
     } catch (error) {
       console.error("Analysis error:", error);
       toast({
@@ -135,9 +208,131 @@ const DiagnosisSection = () => {
       case "medium": return "text-warning bg-warning/10";
       case "high": return "text-destructive/80 bg-destructive/10";
       case "critical": return "text-destructive bg-destructive/10";
+      case "n/a": return "text-muted-foreground bg-muted";
       default: return "text-muted-foreground bg-muted";
     }
   };
+
+  const renderIrrelevantResult = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div className="bg-destructive/10 rounded-xl p-6 text-center">
+        <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+        <h4 className="text-xl font-bold text-destructive mb-2">Image Not Recognized</h4>
+        <p className="text-muted-foreground">
+          {result?.irrelevantReason || "This doesn't appear to be a plant leaf image."}
+        </p>
+      </div>
+      
+      <div className="bg-accent/50 rounded-xl p-4">
+        <h5 className="font-medium mb-3">For best results, please ensure:</h5>
+        <ul className="space-y-2">
+          <li className="text-sm text-muted-foreground flex items-center gap-2">
+            <Leaf className="w-4 h-4 text-primary" />
+            Upload a clear photo of a plant leaf
+          </li>
+          <li className="text-sm text-muted-foreground flex items-center gap-2">
+            <Camera className="w-4 h-4 text-primary" />
+            Good lighting without shadows
+          </li>
+          <li className="text-sm text-muted-foreground flex items-center gap-2">
+            <Image className="w-4 h-4 text-primary" />
+            Leaf should fill most of the frame
+          </li>
+        </ul>
+      </div>
+      
+      <Button 
+        className="w-full" 
+        variant="outline"
+        onClick={() => {
+          setResult(null);
+          setUploadedImage(null);
+        }}
+      >
+        Try Another Image
+      </Button>
+    </div>
+  );
+
+  const renderDiseaseResult = () => (
+    <div className="space-y-6 animate-fade-in">
+      {/* Disease Name & Confidence */}
+      <div className={`rounded-xl p-4 ${result?.disease === "Healthy" ? "bg-success/10" : "bg-accent/50"}`}>
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <p className="text-sm text-muted-foreground">Detected Disease</p>
+            <h4 className={`text-xl font-bold ${result?.disease === "Healthy" ? "text-success" : "text-foreground"}`}>
+              {result?.disease}
+            </h4>
+          </div>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(result?.severity || "")}`}>
+            {result?.severity}
+          </span>
+        </div>
+        <div className="mt-3">
+          <div className="flex justify-between text-sm mb-1">
+            <span>Confidence</span>
+            <span className="font-medium">{result?.confidence}%</span>
+          </div>
+          <div className="h-2 bg-border rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${result?.disease === "Healthy" ? "bg-success" : "bg-primary"}`}
+              style={{ width: `${result?.confidence}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Symptoms */}
+      {result?.symptoms && result.symptoms.length > 0 && (
+        <div>
+          <h5 className="font-medium mb-2 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-warning" />
+            {result.disease === "Healthy" ? "Health Indicators" : "Symptoms Detected"}
+          </h5>
+          <ul className="space-y-1">
+            {result.symptoms.map((symptom, i) => (
+              <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                {symptom}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Treatment */}
+      {result?.treatment && result.treatment.length > 0 && (
+        <div>
+          <h5 className="font-medium mb-2 text-primary">
+            {result.disease === "Healthy" ? "Maintenance Tips" : "Treatment Recommendations"}
+          </h5>
+          <ul className="space-y-2">
+            {result.treatment.map((item, i) => (
+              <li key={i} className="text-sm bg-card border border-border rounded-lg p-3">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Prevention */}
+      {result?.prevention && result.prevention.length > 0 && (
+        <div>
+          <h5 className="font-medium mb-2 text-muted-foreground">Prevention Tips</h5>
+          <ul className="space-y-1">
+            {result.prevention.map((tip, i) => (
+              <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
+                <CheckCircle className="w-3 h-3 text-primary" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <section id="diagnosis" className="py-20 bg-background">
@@ -279,78 +474,16 @@ const DiagnosisSection = () => {
           {/* Results Section */}
           <Card className="p-6">
             <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-primary" />
-              {result ? "Diagnosis Results" : "Awaiting Your Image"}
+              {result?.isIrrelevant ? (
+                <XCircle className="w-5 h-5 text-destructive" />
+              ) : (
+                <CheckCircle className="w-5 h-5 text-primary" />
+              )}
+              {result ? (result.isIrrelevant ? "Analysis Result" : "Diagnosis Results") : "Awaiting Your Image"}
             </h3>
             
             {result ? (
-              <div className="space-y-6 animate-fade-in">
-                {/* Disease Name & Confidence */}
-                <div className="bg-accent/50 rounded-xl p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Detected Disease</p>
-                      <h4 className="text-xl font-bold text-foreground">{result.disease}</h4>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getSeverityColor(result.severity)}`}>
-                      {result.severity}
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Confidence</span>
-                      <span className="font-medium">{result.confidence}%</span>
-                    </div>
-                    <div className="h-2 bg-border rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-500"
-                        style={{ width: `${result.confidence}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Symptoms */}
-                <div>
-                  <h5 className="font-medium mb-2 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-warning" />
-                    Symptoms Detected
-                  </h5>
-                  <ul className="space-y-1">
-                    {result.symptoms.map((symptom, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-primary rounded-full" />
-                        {symptom}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Treatment */}
-                <div>
-                  <h5 className="font-medium mb-2 text-primary">Treatment Recommendations</h5>
-                  <ul className="space-y-2">
-                    {result.treatment.map((item, i) => (
-                      <li key={i} className="text-sm bg-card border border-border rounded-lg p-3">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Prevention */}
-                <div>
-                  <h5 className="font-medium mb-2 text-muted-foreground">Prevention Tips</h5>
-                  <ul className="space-y-1">
-                    {result.prevention.map((tip, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <CheckCircle className="w-3 h-3 text-primary" />
-                        {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              result.isIrrelevant ? renderIrrelevantResult() : renderDiseaseResult()
             ) : (
               <div className="text-center py-12">
                 <div className="w-20 h-20 rounded-full bg-accent mx-auto flex items-center justify-center mb-4">

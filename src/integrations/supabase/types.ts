@@ -14,7 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_history: {
+        Row: {
+          created_at: string
+          id: string
+          messages: Json
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      diagnosis_history: {
+        Row: {
+          confidence: number
+          created_at: string
+          crop_type: string
+          disease_name: string
+          id: string
+          is_irrelevant: boolean
+          prevention: Json
+          session_id: string
+          severity: string
+          symptoms: Json
+          treatment: Json
+        }
+        Insert: {
+          confidence: number
+          created_at?: string
+          crop_type: string
+          disease_name: string
+          id?: string
+          is_irrelevant?: boolean
+          prevention?: Json
+          session_id: string
+          severity: string
+          symptoms?: Json
+          treatment?: Json
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          crop_type?: string
+          disease_name?: string
+          id?: string
+          is_irrelevant?: boolean
+          prevention?: Json
+          session_id?: string
+          severity?: string
+          symptoms?: Json
+          treatment?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

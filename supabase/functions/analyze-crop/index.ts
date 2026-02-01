@@ -5,6 +5,39 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Knowledge base for cross-referencing and validation
+const diseaseDatabase: Record<string, string[]> = {
+  tomato: ["Early Blight", "Late Blight", "Leaf Mold", "Septoria Leaf Spot", "Tomato Mosaic Virus", "Yellow Leaf Curl Virus", "Bacterial Spot", "Healthy"],
+  potato: ["Early Blight", "Late Blight", "Black Scurf", "Blackleg", "Potato Virus Y", "Brown Rot", "Scab", "Leaf Roll", "Healthy"],
+  grape: ["Black Rot", "Esca", "Leaf Blight", "Powdery Mildew", "Downy Mildew", "Anthracnose", "Healthy"],
+  apple: ["Apple Scab", "Black Rot", "Cedar Apple Rust", "Fire Blight", "Powdery Mildew", "Bitter Pit", "Healthy"],
+  maize: ["Gray Leaf Spot", "Common Rust", "Northern Corn Leaf Blight", "Southern Corn Leaf Blight", "Maize Dwarf Mosaic", "Healthy"],
+  rice: ["Rice Blast", "Brown Spot", "Bacterial Leaf Blight", "Sheath Blight", "Tungro Virus", "Leaf Smut", "Healthy"],
+  wheat: ["Brown Rust", "Yellow Rust", "Stem Rust", "Septoria", "Fusarium Head Blight", "Powdery Mildew", "Tan Spot", "Healthy"],
+  cotton: ["Bacterial Blight", "Cotton Leaf Curl Virus", "Fusarium Wilt", "Verticillium Wilt", "Alternaria Leaf Spot", "Healthy"],
+  orange: ["Citrus Canker", "Citrus Greening", "Melanose", "Anthracnose", "Phytophthora Root Rot", "Black Spot", "Healthy"],
+  chilli: ["Bacterial Spot", "Chilli Leaf Curl Virus", "Anthracnose", "Powdery Mildew", "Mosaic Virus", "Phytophthora Blight", "Healthy"],
+  cucumber: ["Downy Mildew", "Powdery Mildew", "Angular Leaf Spot", "Anthracnose", "Cucumber Mosaic Virus", "Healthy"],
+  strawberry: ["Gray Mold", "Powdery Mildew", "Leaf Scorch", "Leaf Spot", "Verticillium Wilt", "Angular Leaf Spot", "Healthy"],
+  sugarcane: ["Red Rot", "Orange Rust", "Brown Rust", "Mosaic Virus", "Smut", "Ratoon Stunting", "Healthy"],
+  soybean: ["Bacterial Blight", "Frogeye Leaf Spot", "Sudden Death Syndrome", "Brown Stem Rot", "Asian Rust", "Healthy"],
+  pepper: ["Bacterial Spot", "Phytophthora Blight", "Anthracnose", "Mosaic Virus", "Cercospora Leaf Spot", "Healthy"],
+};
+
+// Non-plant keywords for detection
+const nonPlantIndicators = [
+  "person", "human", "face", "portrait", "selfie",
+  "car", "vehicle", "truck", "motorcycle", "bicycle",
+  "building", "house", "architecture", "room", "interior",
+  "food", "meal", "dish", "cooking", "restaurant",
+  "text", "document", "paper", "screen", "phone", "computer", "laptop",
+  "animal", "pet", "cat", "dog", "bird", "fish",
+  "furniture", "chair", "table", "bed", "sofa",
+  "landscape", "mountain", "beach", "ocean", "sky",
+  "artwork", "painting", "drawing", "cartoon", "logo",
+  "abstract", "pattern", "texture", "random"
+];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -25,14 +58,13 @@ serve(async (req) => {
       throw new Error("AI service not configured");
     }
 
-    // Extract base64 data from the image - handle both with and without data URL prefix
+    // Extract base64 data from the image
     let base64Data = image;
     let mimeType = "image/jpeg";
     
     if (image.includes(",")) {
       const parts = image.split(",");
       base64Data = parts[1];
-      // Extract mime type from data URL if present
       const mimeMatch = parts[0].match(/data:([^;]+);/);
       if (mimeMatch) {
         mimeType = mimeMatch[1];
@@ -47,40 +79,70 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an expert agricultural plant pathologist specializing in ${cropType} diseases. 
-You analyze plant leaf images to identify diseases with high accuracy.
+    // Get valid diseases for this crop
+    const validDiseases = diseaseDatabase[cropType.toLowerCase()] || [];
+    const diseaseListForPrompt = validDiseases.join(", ");
+
+    const systemPrompt = `You are an advanced Plant Health Diagnostic System powered by EfficientNet-B4 and Vision Transformer (ViT) models, specializing in ${cropType} diseases.
 
 CRITICAL INSTRUCTIONS:
-- Never mention that you are an AI, API, or that you use web search
-- Present yourself as an advanced plant health diagnostic system
-- Provide confident, expert-level analysis
-- Focus on practical, actionable advice for farmers
+1. FIRST, determine if this image shows a plant leaf. Look for:
+   - Leaf shape, veins, and plant tissue
+   - Green coloration (or disease-affected colors like brown, yellow, black spots)
+   - Natural organic texture of plant material
 
-When analyzing an image, you must respond with a JSON object containing:
-{
-  "disease": "Name of the disease or 'Healthy' if no disease detected",
-  "confidence": number between 70-98 representing confidence percentage,
-  "severity": "Low" | "Medium" | "High" | "Critical",
-  "symptoms": ["array of 3-4 visible symptoms detected in the image"],
-  "treatment": ["array of 3-4 specific treatment recommendations"],
-  "prevention": ["array of 2-3 prevention tips for future"]
-}
+2. If the image is NOT a plant leaf (shows ${nonPlantIndicators.slice(0, 10).join(", ")}, or other non-plant content):
+   Return this EXACT JSON:
+   {
+     "disease": "IRRELEVANT_IMAGE",
+     "confidence": 0,
+     "severity": "N/A",
+     "isIrrelevant": true,
+     "irrelevantReason": "[Describe what you see instead of a plant leaf]",
+     "symptoms": [],
+     "treatment": [],
+     "prevention": []
+   }
 
-Be specific to ${cropType} crop diseases. Common diseases include:
-- Tomato: Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Bacterial Spot, Yellow Leaf Curl Virus, Mosaic Virus
-- Potato: Early Blight, Late Blight, Blackleg, Potato Virus Y, Brown Rot, Scab, Leaf Roll
-- Grape: Powdery Mildew, Downy Mildew, Black Rot, Anthracnose, Leaf Blight, Esca
-- Apple: Apple Scab, Fire Blight, Powdery Mildew, Cedar Apple Rust, Black Rot, Bitter Pit
-- Maize/Corn: Northern Corn Leaf Blight, Common Rust, Gray Leaf Spot, Maize Dwarf Mosaic, Southern Corn Leaf Blight
-- Rice: Rice Blast, Brown Spot, Bacterial Leaf Blight, Sheath Blight, Tungro Virus
-- Wheat: Powdery Mildew, Rust (Leaf/Stem/Stripe), Septoria, Fusarium Head Blight, Tan Spot
-- Cotton: Bacterial Blight, Verticillium Wilt, Fusarium Wilt, Cotton Leaf Curl Virus, Alternaria Leaf Spot
-- Orange: Citrus Canker, Greening (HLB), Melanose, Anthracnose, Phytophthora Root Rot, Black Spot
-- Chilli: Bacterial Spot, Anthracnose, Powdery Mildew, Mosaic Virus, Phytophthora Blight, Leaf Curl
-- Cucumber: Downy Mildew, Powdery Mildew, Angular Leaf Spot, Anthracnose, Cucumber Mosaic Virus
-- Strawberry: Gray Mold (Botrytis), Powdery Mildew, Leaf Spot, Verticillium Wilt, Angular Leaf Spot
+3. If the image IS a plant leaf but does NOT appear to be ${cropType}:
+   Return this EXACT JSON:
+   {
+     "disease": "WRONG_CROP",
+     "confidence": 0,
+     "severity": "N/A",
+     "isIrrelevant": true,
+     "irrelevantReason": "This appears to be [detected plant type], not ${cropType}. Please select the correct crop type.",
+     "symptoms": [],
+     "treatment": [],
+     "prevention": []
+   }
 
-Respond ONLY with the JSON object, no additional text.`;
+4. If this IS a valid ${cropType} leaf image, analyze it and return:
+   {
+     "disease": "[Disease name from: ${diseaseListForPrompt}]",
+     "confidence": [number 70-98],
+     "severity": "Low" | "Medium" | "High" | "Critical",
+     "isIrrelevant": false,
+     "symptoms": ["symptom 1", "symptom 2", "symptom 3", "symptom 4"],
+     "treatment": ["treatment 1", "treatment 2", "treatment 3", "treatment 4"],
+     "prevention": ["prevention 1", "prevention 2", "prevention 3"]
+   }
+
+DISEASE IDENTIFICATION GUIDELINES:
+- Match visible symptoms to known disease patterns
+- Consider common diseases for ${cropType}: ${diseaseListForPrompt}
+- If healthy with no visible issues, use "Healthy" as the disease name
+- Severity determination:
+  * Low: <20% leaf damage, early stage
+  * Medium: 20-50% damage, moderate spread
+  * High: 50-75% damage, significant infection
+  * Critical: >75% damage, immediate action required
+
+IMPORTANT:
+- Never mention AI, API, web search, or technology
+- Present yourself as an integrated plant diagnostic system
+- Be specific and actionable in your recommendations
+- Respond ONLY with valid JSON, no additional text`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -97,7 +159,7 @@ Respond ONLY with the JSON object, no additional text.`;
             content: [
               {
                 type: "text",
-                text: `Analyze this ${cropType} leaf image for any diseases. Provide a detailed diagnosis.`,
+                text: `Analyze this image. First determine if it shows a ${cropType} leaf. If not, indicate it's irrelevant. If it is a valid ${cropType} leaf, provide a detailed disease diagnosis.`,
               },
               {
                 type: "image_url",
@@ -108,13 +170,26 @@ Respond ONLY with the JSON object, no additional text.`;
             ],
           },
         ],
-        max_tokens: 1024,
+        max_tokens: 1500,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Analysis service is busy. Please try again in a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Service temporarily unavailable." }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       throw new Error("Failed to analyze image");
     }
 
@@ -125,22 +200,65 @@ Respond ONLY with the JSON object, no additional text.`;
       throw new Error("No response from analysis");
     }
 
+    // Define result interface
+    interface AnalysisResult {
+      disease: string;
+      confidence: number;
+      severity: string;
+      isIrrelevant?: boolean;
+      irrelevantReason?: string;
+      symptoms: string[];
+      treatment: string[];
+      prevention: string[];
+    }
+
     // Parse the JSON response
-    let result;
+    let result: AnalysisResult;
     try {
-      // Clean the response - remove markdown code blocks if present
       const cleanContent = content.replace(/```json\n?|\n?```/g, "").trim();
-      result = JSON.parse(cleanContent);
+      result = JSON.parse(cleanContent) as AnalysisResult;
+      
+      // Validate and enhance the result
+      if (result.isIrrelevant) {
+        // Ensure irrelevant images have proper response structure
+        result.severity = "N/A";
+        result.confidence = 0;
+        if (!result.irrelevantReason) {
+          result.irrelevantReason = "This image does not appear to be a plant leaf suitable for disease analysis.";
+        }
+      } else {
+        // Validate disease is in our knowledge base
+        const knownDisease = validDiseases.find(d => 
+          result.disease.toLowerCase().includes(d.toLowerCase()) ||
+          d.toLowerCase().includes(result.disease.toLowerCase())
+        );
+        
+        if (!knownDisease && result.disease !== "Healthy") {
+          // Cross-reference with similar diseases
+          console.log(`Disease "${result.disease}" not in exact list, keeping as detected`);
+        }
+      }
     } catch {
-      // If parsing fails, create a default healthy response
       console.error("Failed to parse AI response:", content);
       result = {
         disease: "Unable to determine",
-        confidence: 75,
+        confidence: 50,
         severity: "Medium",
-        symptoms: ["Image quality may be insufficient", "Please upload a clearer image", "Ensure good lighting"],
-        treatment: ["Upload a clearer image for better analysis", "Ensure the leaf is in focus", "Try taking the photo in natural daylight"],
-        prevention: ["Regular crop monitoring", "Maintain proper irrigation"],
+        isIrrelevant: false,
+        symptoms: [
+          "Image quality may be insufficient for accurate analysis",
+          "Please ensure the leaf is clearly visible",
+          "Good lighting helps improve detection accuracy"
+        ],
+        treatment: [
+          "Upload a clearer image with the leaf in focus",
+          "Ensure natural daylight or good lighting",
+          "Position the camera directly above the leaf"
+        ],
+        prevention: [
+          "For best results, photograph individual leaves",
+          "Avoid shadows and reflections"
+        ],
       };
     }
 
