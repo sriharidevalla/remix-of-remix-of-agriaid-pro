@@ -141,7 +141,7 @@ const Install = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                Works offline for faster loading
+                No app store download required
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
