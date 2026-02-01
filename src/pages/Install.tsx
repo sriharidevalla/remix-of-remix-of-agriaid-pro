@@ -141,7 +141,7 @@ const Install = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
-                No app store download required
+                Always available on your device
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary" />
