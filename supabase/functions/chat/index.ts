@@ -135,7 +135,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, language = "en", sessionId } = await req.json();
+    const { messages, language = "en", sessionId, userId } = await req.json();
     
     if (!messages || !Array.isArray(messages)) {
       return new Response(
@@ -144,34 +144,44 @@ serve(async (req) => {
       );
     }
 
+    // Require userId for authenticated access
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required. Please sign in to use the chat." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("AI service not configured");
     }
 
-    // Initialize Supabase client for conversation memory (optional)
+    // Initialize Supabase client for conversation memory
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
     let conversationHistory: { role: string; content: string }[] = [];
     let supabase: ReturnType<typeof createClient> | null = null;
     
-    if (supabaseUrl && supabaseKey && sessionId) {
+    if (supabaseUrl && supabaseKey && userId) {
       try {
         supabase = createClient(supabaseUrl, supabaseKey);
         
-        // Try to fetch conversation history
+        // Fetch conversation history by user_id (authenticated)
         const { data: historyData } = await supabase
           .from("chat_history")
           .select("messages")
-          .eq("session_id", sessionId)
+          .eq("user_id", userId)
+          .order("updated_at", { ascending: false })
+          .limit(1)
           .single();
         
         if (historyData?.messages && Array.isArray(historyData.messages)) {
           conversationHistory = historyData.messages as { role: string; content: string }[];
         }
       } catch (dbError) {
-        console.log("Chat history not available, using session only:", dbError);
+        console.log("Chat history not available, starting fresh:", dbError);
       }
     }
 
@@ -275,21 +285,40 @@ Remember: You are the Plant Health Advisory System's expert assistant, here to h
       throw new Error("No response generated");
     }
 
-    // Store updated conversation history (optional)
-    if (supabase && sessionId) {
+    // Store updated conversation history using user_id (authenticated)
+    if (supabase && userId) {
       try {
         const updatedMessages = [
           ...allMessages,
           { role: "assistant", content: content }
         ].slice(-20); // Keep last 20 messages
 
-        await supabase
+        // Check if record exists for this user
+        const { data: existingRecord } = await supabase
           .from("chat_history")
-          .upsert({
-            session_id: sessionId,
-            messages: updatedMessages,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: "session_id" });
+          .select("id")
+          .eq("user_id", userId)
+          .single();
+
+        if (existingRecord) {
+          // Update existing record
+          await supabase
+            .from("chat_history")
+            .update({
+              messages: updatedMessages,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId);
+        } else {
+          // Insert new record
+          await supabase
+            .from("chat_history")
+            .insert({
+              user_id: userId,
+              session_id: sessionId || `user_${userId}`,
+              messages: updatedMessages,
+            });
+        }
       } catch (saveError) {
         console.log("Could not save chat history:", saveError);
       }
