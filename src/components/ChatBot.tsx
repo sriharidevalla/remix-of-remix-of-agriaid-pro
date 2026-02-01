@@ -1,18 +1,20 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Loader2, Leaf } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Leaf, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/auth/AuthModal";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-// Generate a session ID for conversation memory
-const getSessionId = () => {
+// Generate a local session ID for API calls (not for database identity)
+const getLocalSessionId = () => {
   let sessionId = sessionStorage.getItem("chat_session_id");
   if (!sessionId) {
     sessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -23,12 +25,14 @@ const getSessionId = () => {
 
 const ChatBot = () => {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const sessionId = useRef(getSessionId());
+  const localSessionId = useRef(getLocalSessionId());
 
   // Reset messages with translated welcome when language changes
   useEffect(() => {
@@ -52,6 +56,12 @@ const ChatBot = () => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
+    // Require authentication to send messages
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+
     const userMessage = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
@@ -62,7 +72,8 @@ const ChatBot = () => {
         body: { 
           messages: [...messages, { role: "user", content: userMessage }],
           language: language,
-          sessionId: sessionId.current
+          sessionId: localSessionId.current,
+          userId: user.id  // Pass authenticated user ID
         },
       });
 
@@ -88,6 +99,9 @@ const ChatBot = () => {
 
   return (
     <>
+      {/* Auth Modal */}
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+
       {/* Chat Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -146,23 +160,39 @@ const ChatBot = () => {
 
           {/* Input */}
           <form onSubmit={sendMessage} className="p-4 border-t border-border">
-            <div className="flex gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={t("chatbot.placeholder")}
-                className="flex-1 rounded-full bg-accent/50 border-border"
-                disabled={isLoading}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="rounded-full bg-primary hover:bg-primary/90"
-                disabled={isLoading || !input.trim()}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+            {!user ? (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2 flex items-center justify-center gap-1">
+                  <Lock className="w-4 h-4" />
+                  Sign in to chat with the assistant
+                </p>
+                <Button 
+                  type="button" 
+                  onClick={() => setAuthModalOpen(true)}
+                  className="w-full"
+                >
+                  Sign In to Chat
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={t("chatbot.placeholder")}
+                  className="flex-1 rounded-full bg-accent/50 border-border"
+                  disabled={isLoading}
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="rounded-full bg-primary hover:bg-primary/90"
+                  disabled={isLoading || !input.trim()}
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </form>
         </div>
       )}

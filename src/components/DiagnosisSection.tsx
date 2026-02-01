@@ -1,9 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Upload, Camera, Leaf, Loader2, CheckCircle, AlertTriangle, Image, XCircle } from "lucide-react";
+import { Upload, Camera, Leaf, Loader2, CheckCircle, AlertTriangle, Image, XCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/auth/AuthModal";
 
 const crops = [
   { id: "tomato", name: "Tomato" },
@@ -34,8 +36,8 @@ interface DiagnosisResult {
   irrelevantReason?: string;
 }
 
-// Generate a session ID for this browser session
-const getSessionId = () => {
+// Generate a local session ID for API calls (not for database identity)
+const getLocalSessionId = () => {
   let sessionId = sessionStorage.getItem("diagnosis_session_id");
   if (!sessionId) {
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -45,25 +47,29 @@ const getSessionId = () => {
 };
 
 const DiagnosisSection = () => {
+  const { user } = useAuth();
   const [selectedCrop, setSelectedCrop] = useState<string>("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const sessionId = useRef(getSessionId());
+  const localSessionId = useRef(getLocalSessionId());
 
-  // Load previous diagnosis if available
+  // Load previous diagnosis if user is authenticated
   useEffect(() => {
+    if (!user) return;
+    
     const loadPreviousDiagnosis = async () => {
       try {
         const { data } = await supabase
           .from("diagnosis_history")
           .select("*")
-          .eq("session_id", sessionId.current)
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
@@ -77,7 +83,7 @@ const DiagnosisSection = () => {
       }
     };
     loadPreviousDiagnosis();
-  }, []);
+  }, [user]);
 
   const handleImageUpload = useCallback((file: File) => {
     if (!selectedCrop) {
@@ -153,9 +159,13 @@ const DiagnosisSection = () => {
   };
 
   const saveDiagnosis = async (diagnosisResult: DiagnosisResult) => {
+    // Only save if user is authenticated
+    if (!user) return;
+    
     try {
       await supabase.from("diagnosis_history").insert({
-        session_id: sessionId.current,
+        user_id: user.id,  // Use authenticated user ID
+        session_id: localSessionId.current,  // Keep for local reference
         crop_type: selectedCrop,
         disease_name: diagnosisResult.disease,
         confidence: diagnosisResult.confidence,
@@ -172,6 +182,17 @@ const DiagnosisSection = () => {
 
   const analyzeCrop = async () => {
     if (!uploadedImage || !selectedCrop) return;
+
+    // Require authentication for analysis
+    if (!user) {
+      setAuthModalOpen(true);
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to analyze your crop and save diagnosis history.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsAnalyzing(true);
     try {
@@ -347,7 +368,10 @@ const DiagnosisSection = () => {
   );
 
   return (
-    <section id="diagnosis" className="py-20 bg-background">
+    <>
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+      
+      <section id="diagnosis" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="section-badge mx-auto mb-6">
@@ -464,20 +488,37 @@ const DiagnosisSection = () => {
             </div>
             
             {uploadedImage && (
-              <Button
-                className="w-full mt-4 bg-primary hover:bg-primary/90"
-                onClick={analyzeCrop}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  "Analyze Image"
+              <>
+                {!user && (
+                  <div className="bg-accent/50 rounded-lg p-3 text-center">
+                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mb-2">
+                      <Lock className="w-4 h-4" />
+                      Sign in to analyze and save your diagnosis
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setAuthModalOpen(true)}
+                    >
+                      Sign In
+                    </Button>
+                  </div>
                 )}
-              </Button>
+                <Button
+                  className="w-full mt-4 bg-primary hover:bg-primary/90"
+                  onClick={analyzeCrop}
+                  disabled={isAnalyzing}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    "Analyze Image"
+                  )}
+                </Button>
+              </>
             )}
             
             <p className="text-xs text-muted-foreground mt-4 text-center">
@@ -511,8 +552,9 @@ const DiagnosisSection = () => {
             )}
           </Card>
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 };
 

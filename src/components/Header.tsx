@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Leaf, Menu, X, Download } from "lucide-react";
 import { useState } from "react";
+import UserMenu from "@/components/auth/UserMenu";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -62,8 +63,9 @@ const Header = () => {
             </a>
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
+          {/* CTA Button & User Menu */}
+          <div className="hidden md:flex items-center gap-4">
+            <UserMenu />
             <Button
               onClick={() => scrollToSection("diagnosis")}
               className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
