@@ -83,7 +83,11 @@ serve(async (req) => {
     const validDiseases = diseaseDatabase[cropType.toLowerCase()] || [];
     const diseaseListForPrompt = validDiseases.join(", ");
 
-    const systemPrompt = `You are an advanced Plant Health Diagnostic System powered by EfficientNet-B4 and Vision Transformer (ViT) models, specializing in ${cropType} diseases.
+    // Get all diseases from all crops for cross-crop analysis
+    const allDiseases = Object.values(diseaseDatabase).flat();
+    const uniqueDiseases = [...new Set(allDiseases)];
+
+    const systemPrompt = `You are an advanced Plant Health Diagnostic System powered by EfficientNet-B4 and Vision Transformer (ViT) models.
 
 CRITICAL INSTRUCTIONS:
 1. FIRST, determine if this image shows a plant leaf. Look for:
@@ -98,28 +102,19 @@ CRITICAL INSTRUCTIONS:
      "confidence": 0,
      "severity": "N/A",
      "isIrrelevant": true,
-     "irrelevantReason": "[Describe what you see instead of a plant leaf]",
+     "irrelevantReason": "Please upload a clear image of a plant leaf.",
      "symptoms": [],
      "treatment": [],
      "prevention": []
    }
 
-3. If the image IS a plant leaf but does NOT appear to be ${cropType}:
-   Return this EXACT JSON:
+3. If the image IS a plant leaf (even if it's a different crop than ${cropType}):
+   ANALYZE IT ANYWAY and return a valid disease diagnosis.
+   Do NOT reject it for being the wrong crop. Identify any visible disease.
+   
+   Return:
    {
-     "disease": "WRONG_CROP",
-     "confidence": 0,
-     "severity": "N/A",
-     "isIrrelevant": true,
-     "irrelevantReason": "This appears to be [detected plant type], not ${cropType}. Please select the correct crop type.",
-     "symptoms": [],
-     "treatment": [],
-     "prevention": []
-   }
-
-4. If this IS a valid ${cropType} leaf image, analyze it and return:
-   {
-     "disease": "[Disease name from: ${diseaseListForPrompt}]",
+     "disease": "[Disease name - use common plant disease names like: ${uniqueDiseases.slice(0, 15).join(", ")}]",
      "confidence": [number 70-98],
      "severity": "Low" | "Medium" | "High" | "Critical",
      "isIrrelevant": false,
@@ -130,7 +125,6 @@ CRITICAL INSTRUCTIONS:
 
 DISEASE IDENTIFICATION GUIDELINES:
 - Match visible symptoms to known disease patterns
-- Consider common diseases for ${cropType}: ${diseaseListForPrompt}
 - If healthy with no visible issues, use "Healthy" as the disease name
 - Severity determination:
   * Low: <20% leaf damage, early stage
@@ -159,7 +153,7 @@ IMPORTANT:
             content: [
               {
                 type: "text",
-                text: `Analyze this image. First determine if it shows a ${cropType} leaf. If not, indicate it's irrelevant. If it is a valid ${cropType} leaf, provide a detailed disease diagnosis.`,
+                text: `Analyze this image. Determine if it shows a plant leaf. If not a plant leaf, indicate it's irrelevant with a simple message. If it IS a plant leaf (any type), provide a detailed disease diagnosis.`,
               },
               {
                 type: "image_url",
@@ -223,20 +217,8 @@ IMPORTANT:
         // Ensure irrelevant images have proper response structure
         result.severity = "N/A";
         result.confidence = 0;
-        if (!result.irrelevantReason) {
-          result.irrelevantReason = "This image does not appear to be a plant leaf suitable for disease analysis.";
-        }
-      } else {
-        // Validate disease is in our knowledge base
-        const knownDisease = validDiseases.find(d => 
-          result.disease.toLowerCase().includes(d.toLowerCase()) ||
-          d.toLowerCase().includes(result.disease.toLowerCase())
-        );
-        
-        if (!knownDisease && result.disease !== "Healthy") {
-          // Cross-reference with similar diseases
-          console.log(`Disease "${result.disease}" not in exact list, keeping as detected`);
-        }
+        // Always use simple message for irrelevant images
+        result.irrelevantReason = "Please upload a clear image of a plant leaf.";
       }
     } catch {
       console.error("Failed to parse AI response:", content);

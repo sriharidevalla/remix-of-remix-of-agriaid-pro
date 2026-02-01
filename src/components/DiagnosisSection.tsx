@@ -215,30 +215,12 @@ const DiagnosisSection = () => {
 
   const renderIrrelevantResult = () => (
     <div className="space-y-6 animate-fade-in">
-      <div className="bg-destructive/10 rounded-xl p-6 text-center">
-        <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-        <h4 className="text-xl font-bold text-destructive mb-2">Image Not Recognized</h4>
+      <div className="bg-accent/50 rounded-xl p-6 text-center">
+        <Leaf className="w-16 h-16 text-primary mx-auto mb-4" />
+        <h4 className="text-xl font-bold mb-2">Please Upload a Leaf Image</h4>
         <p className="text-muted-foreground">
-          {result?.irrelevantReason || "This doesn't appear to be a plant leaf image."}
+          Upload a clear photo of a plant leaf to get disease diagnosis.
         </p>
-      </div>
-      
-      <div className="bg-accent/50 rounded-xl p-4">
-        <h5 className="font-medium mb-3">For best results, please ensure:</h5>
-        <ul className="space-y-2">
-          <li className="text-sm text-muted-foreground flex items-center gap-2">
-            <Leaf className="w-4 h-4 text-primary" />
-            Upload a clear photo of a plant leaf
-          </li>
-          <li className="text-sm text-muted-foreground flex items-center gap-2">
-            <Camera className="w-4 h-4 text-primary" />
-            Good lighting without shadows
-          </li>
-          <li className="text-sm text-muted-foreground flex items-center gap-2">
-            <Image className="w-4 h-4 text-primary" />
-            Leaf should fill most of the frame
-          </li>
-        </ul>
       </div>
       
       <Button 
@@ -249,7 +231,7 @@ const DiagnosisSection = () => {
           setUploadedImage(null);
         }}
       >
-        Try Another Image
+        Choose Another Image
       </Button>
     </div>
   );
